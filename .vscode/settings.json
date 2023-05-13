@@ -5,6 +5,8 @@
         "*.tcc": "cpp",
         "iostream": "cpp",
         "istream": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "new": "cpp",
+        "string_view": "cpp"
     }
 }
