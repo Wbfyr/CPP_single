@@ -3,13 +3,40 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "c:\\Users\\29402\\fromDataD\\allwork\\codefield\\code_CPP\\VSCODE\\CPP_single/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
-            ]
+            ],
+            "intelliSenseMode": "windows-gcc-x64",
+            "mergeConfigurations": false,
+            "compilerPath": "C:/Users/29402/fromDataD/allwork/codefield/mingw64/bin/gcc.exe",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        },
+        {
+            "name": "Windows",
+            "includePath": [
+                "c:\\Users\\29402\\fromDataD\\allwork\\codefield\\code_CPP\\VSCODE\\CPP_single/**"
+            ],
+            "defines": [],
+            "intelliSenseMode": "windows-gcc-x64",
+            "compilerPath": "C:/Users/29402/fromDataD/allwork/codefield/mingw64/bin/gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
         }
     ],
     "version": 4

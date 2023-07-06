@@ -1,13 +1,12 @@
 #include <iostream>
-#include <string>
-#include <sstream>
+#include <set>
 using namespace std;
 
 int main()
 {
-    for (int i = 0; i < 100; ++i)
-    {
-        cout << "d";
-    }
-    return 0;
+    set<int> s1;
+    s1.insert(3);
+    s1.insert(1);
+    s1.insert(8);
+    s1.insert(4);
 }
