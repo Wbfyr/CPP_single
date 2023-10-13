@@ -69,7 +69,7 @@ int get_vers(string s)
     {
         dotpos = s.length();
     }
-    return conv_to_num(s, _pos + sizeof("_副本"), dotpos);
+    return conv_to_num(s, _pos + 7, dotpos);
 }
 
 // 将原版以及已经存在的版本号存入map
