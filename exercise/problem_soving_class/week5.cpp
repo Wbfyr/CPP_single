@@ -8,6 +8,9 @@ using namespace std;
 
 class Polynomial
 {
+
+    friend ostream &operator<<(ostream &os, const Polynomial &poly);
+
 private:
     regex pattern_match, pattern_catch;
     string simplified_p, origin_p;
@@ -17,11 +20,13 @@ private:
     bool formatTrue();
     void putInSingles();
     void putInpairs();
-    string simplify();
-    string fourRemind(double d);
+    map<int, double> sub_r(map<int, double> m1, map<int, double> m2);
+    map<int, double> multi_in(map<int, double> m1, pair<int, double> m2);
+    string simplify() const;
+    string fourRemind(double d) const;
 
 public:
-    bool getformat()
+    bool getformat() const
     {
         return formattrue;
     }
@@ -29,15 +34,170 @@ public:
     {
         return pairs;
     };
+    void remain();
+    void sumup();
+    void sub();
+    void multi();
+    void divi();
     Polynomial(string s);
     Polynomial(map<int, double> p1, map<int, double> p2);
-    ostream &operator<<(ostream &os);
-    Polynomial operator+(const Polynomial &p1) const;
-    Polynomial operator-(const Polynomial &p1) const;
-    Polynomial operator*(const Polynomial &p1) const;
-    Polynomial operator/(const Polynomial &p1) const;
-    Polynomial operator%(const Polynomial &p1) const;
+    Polynomial operator+(Polynomial &p1);
+    Polynomial operator-(Polynomial &p1);
+    Polynomial operator*(Polynomial &p1);
+    Polynomial operator/(Polynomial &p1);
+    Polynomial operator%(Polynomial &p1);
 };
+
+void Polynomial::remain()
+{
+    pair<int, double> subnum1, subnum2;
+    map<int, double>::reverse_iterator rit2 = inicial2.rbegin();
+    subnum2 = *rit2;
+    map<int, double>::reverse_iterator rit = inicial1.rbegin();
+
+    map<int, double> temp = inicial1;
+    while (rit->first >= subnum2.first)
+    {
+        pair<int, double> m2;
+        m2.first = rit->first - subnum2.first;
+        m2.second = rit->second / subnum2.second;
+        temp = sub_r(temp, multi_in(inicial2, m2));
+        rit = temp.rbegin();
+        if (rit == temp.rend())
+        {
+            break;
+        }
+    }
+    pairs = temp;
+}
+
+map<int, double> Polynomial::multi_in(map<int, double> m1, pair<int, double> m2)
+{
+    map<int, double> m3;
+    for (auto &p : m1)
+    {
+        int key = p.first;
+        double value = p.second;
+        m3[key + m2.first] = value * m2.second;
+    }
+    return m3;
+}
+
+map<int, double> Polynomial::sub_r(map<int, double> m1, map<int, double> m2)
+{
+    map<int, double> m3 = m1;
+    for (auto &mp : m2)
+    {
+        int key = mp.first;
+        double value = mp.second;
+        if (m3.find(key) != m3.end())
+        {
+            m3[key] -= value;
+            if (!m3[key])
+            {
+                m3.erase(key);
+            }
+        }
+        else
+        {
+            m3[key] = -1 * value;
+        }
+    }
+    return m3;
+}
+
+void Polynomial::divi()
+{
+    pair<int, double> subnum1, subnum2;
+    map<int, double>::reverse_iterator rit2 = inicial2.rbegin();
+    subnum2 = *rit2;
+    map<int, double>::reverse_iterator rit = inicial1.rbegin();
+
+    map<int, double> temp = inicial1;
+    while (rit->first >= subnum2.first)
+    {
+        pair<int, double> m2;
+        m2.first = rit->first - subnum2.first;
+        m2.second = rit->second / subnum2.second;
+        pairs[m2.first] = m2.second;
+        temp = sub_r(temp, multi_in(inicial2, m2));
+        rit = temp.rbegin();
+        if (rit == temp.rend())
+        {
+            break;
+        }
+    }
+}
+
+void Polynomial::multi()
+{
+    for (auto &mappair : inicial2)
+    {
+        int key = mappair.first;
+        double value = mappair.second;
+        for (auto &mappair2 : inicial1)
+        {
+            int key_sum = mappair2.first + key;
+            double value_mul = mappair2.second * value;
+            if (pairs.find(key_sum) != pairs.end())
+            {
+                pairs[key_sum] += value_mul;
+                if (!pairs[key_sum])
+                {
+                    pairs.erase(key_sum);
+                }
+            }
+            else
+            {
+                pairs[key_sum] = value_mul;
+            }
+        }
+    }
+}
+
+void Polynomial::sumup()
+{
+    pairs = inicial1;
+    for (auto &mappair : inicial2)
+    {
+        int key = mappair.first;
+        double value = mappair.second;
+        if (pairs.find(key) != pairs.end())
+        {
+            pairs[key] += value;
+            if (!pairs[key])
+            {
+                pairs.erase(key);
+            }
+        }
+        else
+        {
+            pairs[key] = value;
+        }
+    }
+}
+
+void Polynomial::sub()
+{
+    pairs = inicial1;
+    for (auto &mappair : inicial2)
+    {
+        int key = mappair.first;
+        double value = mappair.second;
+        if (pairs.find(key) != pairs.end())
+        {
+            pairs[key] -= value;
+            if (!pairs[key])
+            {
+                pairs.erase(key);
+            }
+        }
+        else
+        {
+            pairs[key] = -1 * value;
+        }
+    }
+}
 
 Polynomial::Polynomial(string s)
 {
@@ -51,6 +211,7 @@ Polynomial::Polynomial(string s)
 
 Polynomial::Polynomial(map<int, double> p1, map<int, double> p2)
 {
+    formattrue = true;
     inicial1 = p1;
     inicial2 = p2;
 }
@@ -64,7 +225,7 @@ bool Polynomial::formatTrue()
         return false;
 }
 
-string Polynomial::fourRemind(double d)
+string Polynomial::fourRemind(double d) const
 {
     int i = d * 10000;
     string fourre = to_string(i);
@@ -133,7 +294,7 @@ void Polynomial::putInpairs()
     }
 }
 
-string Polynomial::simplify()
+string Polynomial::simplify() const
 {
     if (formattrue)
     {
@@ -194,11 +355,11 @@ string Polynomial::simplify()
     }
 }
 
-ostream &Polynomial::operator<<(ostream &os)
+ostream &operator<<(ostream &os, const Polynomial &poly)
 {
-    if (formattrue)
+    if (poly.getformat())
     {
-        os << simplify();
+        os << poly.simplify();
     }
     else
     {
@@ -206,31 +367,64 @@ ostream &Polynomial::operator<<(ostream &os)
     }
 }
 
-Polynomial Polynomial::operator+(const Polynomial &p1) const
+Polynomial Polynomial::operator+(Polynomial &p1)
 {
-    if (!formattrue)
+    if (!formattrue || !p1.getformat())
     {
         Polynomial new_p("");
         return new_p;
     }
-    if (!p1.getformat())
-        Polynomial new_p();
+    Polynomial new_p(pairs, p1.getpairs());
+    new_p.sumup();
+    return new_p;
 }
 
-Polynomial Polynomial::operator-(const Polynomial &p1) const
+Polynomial Polynomial::operator-(Polynomial &p1)
 {
+    if (!formattrue || !p1.getformat())
+    {
+        Polynomial new_p("");
+        return new_p;
+    }
+    Polynomial new_p(pairs, p1.getpairs());
+    new_p.sub();
+    return new_p;
 }
 
-Polynomial Polynomial::operator*(const Polynomial &p1) const
+Polynomial Polynomial::operator*(Polynomial &p1)
 {
+    if (!formattrue || !p1.getformat())
+    {
+        Polynomial new_p("");
+        return new_p;
+    }
+    Polynomial new_p(pairs, p1.getpairs());
+    new_p.multi();
+    return new_p;
 }
 
-Polynomial Polynomial::operator/(const Polynomial &p1) const
+Polynomial Polynomial::operator/(Polynomial &p1)
 {
+    if (!formattrue || !p1.getformat())
+    {
+        Polynomial new_p("");
+        return new_p;
+    }
+    Polynomial new_p(pairs, p1.getpairs());
+    new_p.divi();
+    return new_p;
 }
 
-Polynomial Polynomial::operator%(const Polynomial &p1) const
+Polynomial Polynomial::operator%(Polynomial &p1)
 {
+    if (!formattrue || !p1.getformat())
+    {
+        Polynomial new_p("");
+        return new_p;
+    }
+    Polynomial new_p(pairs, p1.getpairs());
+    new_p.remain();
+    return new_p;
 }
 
 int main()
