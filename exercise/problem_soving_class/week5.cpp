@@ -1,3 +1,8 @@
+// 历辛苦，终将测试集全通过
+// 目前写过的最长的代码了，而且是一个初步有重载功能的类
+// 其实还有很多粗糙的地方，关于一些正则表达式的报错也是用if筛选了，至于报错原理，还未明白
+// 修修补补，使得代码仍不够精炼
+
 #include <string>
 #include <vector>
 #include <sstream>
@@ -6,6 +11,7 @@
 #include <regex>
 using namespace std;
 
+// 多项式类，支持判断不含括号的多项式，可以化简多项式，输出系数始终保持四位小数，可以进行多项式的加减乘除余运算
 class Polynomial
 {
 
@@ -50,6 +56,11 @@ public:
 
 void Polynomial::remain()
 {
+    if (inicial2[0] == 0)
+    {
+        formattrue = false;
+        return;
+    }
     pair<int, double> subnum1, subnum2;
     map<int, double>::reverse_iterator rit2 = inicial2.rbegin();
     subnum2 = *rit2;
@@ -108,6 +119,11 @@ map<int, double> Polynomial::sub_r(map<int, double> m1, map<int, double> m2)
 
 void Polynomial::divi()
 {
+    if (inicial2[0] == 0)
+    {
+        formattrue = false;
+        return;
+    }
     pair<int, double> subnum1, subnum2;
     map<int, double>::reverse_iterator rit2 = inicial2.rbegin();
     subnum2 = *rit2;
@@ -201,10 +217,12 @@ void Polynomial::sub()
 
 Polynomial::Polynomial(string s)
 {
-    pattern_match = regex("^-?\\d*(\\.\\d+)?(x(\\^\\d+)?)?([+\\-]\\d*(\\.\\d+)?(x(\\^\\d+)?)?)*$");
-    pattern_catch = regex(("(-?\\d*(?:x(?:\\^\\d+)?)?(?=[+\\-]|$)"));
+    pattern_match = regex("^-?((\\d+(\\.\\d+)?(x(\\^\\d+)?)?)|x(\\^\\d+)?)([+\\-]((\\d+(\\.\\d+)?(x(\\^\\d+)?)?)|x(\\^\\d+)?))*$");
+    pattern_catch = regex("(-?\\d+(\\.\\d+)?(?:x(?:\\^\\d+)?)?(?=[+\\-]|$))|(-?x(?:\\^\\d+)?(?=[+\\-]|$))");
     origin_p = s;
     formattrue = formatTrue();
+    if (s == "")
+        formattrue = false;
     putInSingles();
     putInpairs();
 }
@@ -228,9 +246,42 @@ bool Polynomial::formatTrue()
 string Polynomial::fourRemind(double d) const
 {
     int i = d * 10000;
-    string fourre = to_string(i);
-    fourre.insert(fourre.size() - 4, ".");
-    return fourre;
+    if (i >= 0)
+    {
+        string fourre = to_string(i);
+        if (fourre.size() <= 4)
+        {
+            string s = "0.";
+            for (int j = 0; j < 4 - fourre.size(); ++j)
+            {
+                s += "0";
+            }
+            s += fourre;
+            fourre = s;
+        }
+        else
+            fourre.insert(fourre.size() - 4, ".");
+        return fourre;
+    }
+    else
+    {
+        i = abs(i);
+        string fourre = to_string(i);
+        if (fourre.size() <= 4)
+        {
+            string s = "0.";
+            for (int j = 0; j < 4 - fourre.size(); ++j)
+            {
+                s += "0";
+            }
+            s += fourre;
+            fourre = s;
+        }
+        else
+            fourre.insert(fourre.size() - 4, ".");
+        fourre = "-" + fourre;
+        return fourre;
+    }
 }
 
 void Polynomial::putInSingles()
@@ -238,12 +289,13 @@ void Polynomial::putInSingles()
     if (formattrue)
     {
         smatch match;
-        for (sregex_iterator it(origin_p.begin(), origin_p.end(), pattern_catch); it != sregex_iterator(); ++it)
+        while (regex_search(origin_p, match, pattern_catch))
         {
-            match = *it;
-            if (match.str() != "")
+            singles.push_back(match.str());
+            origin_p = match.suffix().str();
+            if (origin_p == "")
             {
-                singles.push_back(match.str());
+                break;
             }
         }
     }
@@ -253,8 +305,8 @@ void Polynomial::putInpairs()
 {
     if (formattrue)
     {
-        regex search_first("^-?\\d+(\\.\\d+)?");
-        regex search_second("(?<=\\^)\\d+$");
+        regex search_first("^-?[0-9\\.]+");
+        regex search_second("\\^([0-9]+)$");
         for (auto p : singles)
         {
             smatch match1, match2;
@@ -265,7 +317,7 @@ void Polynomial::putInpairs()
             if (ret)
             {
                 string num = match1.str();
-                second = stoi(num);
+                second = stod(num);
             }
             else
             {
@@ -276,7 +328,7 @@ void Polynomial::putInpairs()
             }
             if (ret2)
             {
-                first = stoi(match2.str());
+                first = stoi(match2.str(1));
             }
             else
             {
@@ -289,7 +341,10 @@ void Polynomial::putInpairs()
                     first = 0;
                 }
             }
-            pairs[first] = second;
+            if (pairs.find(first) == pairs.end())
+                pairs[first] = second;
+            else
+                pairs[first] += second;
         }
     }
 }
@@ -298,10 +353,14 @@ string Polynomial::simplify() const
 {
     if (formattrue)
     {
+        if (pairs.begin() == pairs.end())
+        {
+            return "0.0000";
+        }
         string result = "", single = "";
         for (auto rit = pairs.rbegin(); rit != pairs.rend(); ++rit)
         {
-            if (rit->second >= 0)
+            if (rit->second > 0)
             {
                 if (rit == pairs.rbegin())
                 {
@@ -315,7 +374,9 @@ string Polynomial::simplify() const
                     }
                     else
                     {
+                        // cout << rit->second;
                         single = fourRemind(rit->second) + "x^" + to_string(rit->first);
+                        // cout << single;
                     }
                 }
                 else
@@ -332,6 +393,13 @@ string Polynomial::simplify() const
                     {
                         single = "+" + fourRemind(rit->second) + "x^" + to_string(rit->first);
                     }
+                }
+            }
+            if (rit->second == 0)
+            {
+                if (rit->first == 0)
+                {
+                    single = "0.0000";
                 }
             }
             if (rit->second < 0)
@@ -365,6 +433,7 @@ ostream &operator<<(ostream &os, const Polynomial &poly)
     {
         os << "error";
     }
+    return os;
 }
 
 Polynomial Polynomial::operator+(Polynomial &p1)
@@ -431,11 +500,13 @@ int main()
 {
     string s1, s2;
     cin >> s1 >> s2;
+
     Polynomial p1(s1), p2(s2);
     cout << p1 << endl
          << p2 << endl
          << p1 + p2 << endl
          << p1 - p2 << endl
+         << p1 * p2 << endl
          << p1 / p2 << endl
          << p1 % p2;
 }
