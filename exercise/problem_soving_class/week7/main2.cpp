@@ -1,4 +1,4 @@
-#include "Interpolation.h"
+#include "SimpleLinearRegression.h"
 #include <fstream>
 #include <iomanip>
 
@@ -30,10 +30,9 @@ pair<double, double> catch_cin(string line)
     p.second = stod(s2);
     return p;
 }
-
 double get_four_pre(double x)
 {
-    int m = 100000 * x;
+    int m = abs(10000 * x);
     if (m % 100 == 99)
         return x;
     int y = 10000 * x;
@@ -46,7 +45,7 @@ int main()
     double x0;
     map<double, double> dot_map;
     string line;
-    fstream file("test.txt");
+    fstream file("test2.txt");
     file >> x0;
     while (getline(file, line))
     {
@@ -58,8 +57,21 @@ int main()
         dot_map[temp.first] = temp.second;
     }
     file.close();
-    Interpolation func(dot_map);
-    double result = func.perform_func(x0);
-    cout << fixed << setprecision(4) << get_four_pre(result);
+
+    SimpleLinearRegression sim(dot_map);
+    double relat_coeff = sim.get_r();
+    cout << fixed << setprecision(4) << get_four_pre(relat_coeff) << endl;
+    try
+    {
+        string poly = sim.get_poly();
+        double result = sim.perform_func(x0);
+        cout << poly << endl;
+        cout << fixed << setprecision(4) << get_four_pre(result);
+    }
+    catch (const std::exception &e)
+    {
+        cout << e.what() << endl
+             << e.what();
+    }
     return 0;
 }

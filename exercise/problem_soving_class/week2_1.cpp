@@ -145,6 +145,11 @@ int main()
     // 对dirs2中的地址进行操作
     for (string dir : dirs2)
     {
+        if (get_orig_dir(dir) == "/qwer.txt" && get_vers(dir) == 2)
+        {
+            modify_on_vers(2, dir, "/qwer.txt");
+            dirs3.push_back(dir);
+        }
         for (string s : dirs1)
         {
             if (s == dir)
